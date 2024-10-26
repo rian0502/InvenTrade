@@ -301,7 +301,8 @@
                         </li>
                         <li class="nav-header">Procurement Management</li>
                         <li class="nav-item">
-                            <a href="{{ route('dashboard') }}" class="nav-link">
+                            <a href="{{ route('po.index') }}"
+                                class="nav-link {{ Request::is('purchase-order*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-newspaper"></i>
                                 <p>
                                     Purchase Order
@@ -346,7 +347,7 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">@yield('title')</h1>
+                            <h1 class="m-0"><strong>@yield('title')</strong></h1>
                         </div><!-- /.col -->
                         <div class="col-sm-6">
                         </div><!-- /.col -->
@@ -463,13 +464,13 @@
                 title: 'Success',
                 text: '{{ session('success') }}',
             });
-        @else
-            if (session('errors'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: '{{ session('error') }}',
-                });
+        @endif
+        @if (session('errors'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: '{{ session('error') }}',
+            });
         @endif
     </script>
 </body>

@@ -17,8 +17,10 @@ return new class extends Migration
             $table->string('po_number', 20)->unique();
             $table->date('po_date');
             $table->date('delivery_date');
+            $table->enum('payment_term', ['CAD', 'CBD', 'COD', 'DP']);
             $table->enum('status', ['draft', 'approved', 'rejected', 'completed', 'canceled'])->default('draft');
             $table->decimal('total', 15, 2);
+            $table->text('description')->nullable();
             $table->foreignId('partner_id')->constrained('partners');
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');

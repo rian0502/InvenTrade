@@ -5,18 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PurchaseOrderModel extends Model
+class PODetailModel extends Model
 {
     use HasFactory;
-    protected $table = 'purchase_order';
+
+    protected $table = 'po_details';
 
     protected $fillable = [
-        'po_number',
-        'po_date',
-        'delivery_date',
-        'status',
-        'total',
-        'partner_id',
+        'quantity',
+        'price',
+        'qty',
+        'subtotal',
+        'item_id',
+        'purchase_order_header_id',
         'created_by',
         'updated_by',
     ];

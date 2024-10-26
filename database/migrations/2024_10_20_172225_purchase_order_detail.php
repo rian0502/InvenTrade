@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('price', 15, 2);
             $table->decimal('subtotal', 15, 2);
             $table->foreignId('item_id')->constrained('items');
+            $table->foreignId('unit_of_measure_id')->constrained('unit_of_measures')->onUpdate('cascade');
             $table->foreignId('purchase_order_header_id')->constrained('purchase_order_headers')->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');

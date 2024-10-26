@@ -84,7 +84,7 @@ class PartnersController extends Controller
             'period' => PeriodClosingModel::where('is_closed', 0)->first(),
             'partner' => PartnerModel::find($id)
         ];
-        return view('partners.edit', compact('partner'));
+        return view('partners.edit', $data);
     }
 
     /**
