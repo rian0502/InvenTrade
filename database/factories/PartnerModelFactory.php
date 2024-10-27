@@ -18,8 +18,9 @@ class PartnerModelFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => $this->faker->unique()->iban('ID', 'V'),
+            'code' => $this->faker->unique()->iban('V', 'ID'),
             'name' => $this->faker->company(),
+            'npwp' => $this->faker->unique()->numerify('##.###.###.#-###.###'),
             'description' => $this->faker->sentence(),
             'email' => $this->faker->unique()->companyEmail(),
             'phone' => $this->faker->e164PhoneNumber(),

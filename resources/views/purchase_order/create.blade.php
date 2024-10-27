@@ -8,7 +8,7 @@
     <div class="col-md-12">
         <form method="POST" action="{{ route('po.store') }}">
             <div class="row">
-                <div class="col-md-9">
+                <div class="col-md-8">
                     {{-- Header --}}
                     <div class="card">
                         <div class="card-header">
@@ -80,6 +80,18 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea aria-describedby="description" class="form-control  @error('description') is-invalid @enderror"
+                                            id="description" rows="3" name="description">{{ old('description', '') }}</textarea>
+                                        @error('description')
+                                            <span id="description" class="error invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {{-- End Header --}}
@@ -98,12 +110,14 @@
                                         <th>Quantity</th>
                                         <th>Price</th>
                                         <th>Measure</th>
+                                        <th>Diskon</th>
                                         <th>Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 </tbody>
                             </table>
+                            <input type="hidden" id="itemList" name="items">
                         </div>
                         <div class="card-footer text-right">
                             <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-lg">
@@ -125,13 +139,13 @@
                                     <strong>Total Price</strong>
                                 </div>
                                 <div class="col-6 text-right">
-                                    <span id="totalAmount">0</span>
+                                    <span id="totalPrice">0</span>
                                 </div>
                             </div>
                             <hr>
                             <div class="row">
                                 <div class="col-6">
-                                    <strong>VAT</strong>
+                                    <strong>PPN (11%)</strong>
                                 </div>
                                 <div class="col-6 text-right">
                                     <span id="vatAmount">0</span>
@@ -140,7 +154,16 @@
                             <hr>
                             <div class="row">
                                 <div class="col-6">
-                                    <strong>Amount</strong>
+                                    <strong>Discount</strong>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <span id="discountAmount">0</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Total Amount</strong>
                                 </div>
                                 <div class="col-6 text-right">
                                     <span id="totalPurchaseAmount">0</span>
@@ -149,17 +172,15 @@
                             <hr>
                             <div class="row">
                                 <div class="col-12">
-                                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-cart-plus"></i>  Order Now</button>
+                                    <button type="submit" class="btn btn-primary btn-block"><i
+                                            class="fas fa-cart-plus"></i> Order Now</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {{-- End Preview --}}
                 </div>
             </div>
-
-
-
-
         </form>
     </div>
 
@@ -183,7 +204,7 @@
                                 <select id="item_id" class="form-control select2bs4" style="width: 100%;">
                                     @foreach ($items as $item)
                                         <option value="{{ $item->id }}" data-price="{{ $item->price }}">
-                                            {{ $item->code.' - '.$item->name}}
+                                            {{ $item->code . ' - ' . $item->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -221,8 +242,17 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group">
+                                <label for="diskon" class="form-label">Diskon</label>
+                                <input type="text" class="form-control" id="diskon" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
                                 <label for="subtotal" class="form-label">Subtotal</label>
-                                <input type="text" class="form-control" id="subtotal" value="1" readonly>
+                                <input type="text" class="form-control text-right" id="subtotal" value="1"
+                                    readonly>
                             </div>
                         </div>
                     </div>
@@ -239,71 +269,89 @@
     {{-- End Dropdown Item --}}
 
 
+
     <script src="/plugins/jquery/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Update item price and calculate subtotal
+            let items = [];
 
-            $('#qty, #item_price').on('input', function() {
+            // Set item price based on selection
+            $('#item_id').on('change', function() {
+                var price = $('#item_id option:selected').data('price');
+                $('#item_price').val(price);
                 updateSubtotal();
             });
 
-            function updateSubtotal() {
-                var qty = $('#qty').val();
-                var price = $('#item_price').val();
-                var subtotal = qty * price;
-                $('#subtotal').val(subtotal);
-            }
-
-            $('#saveItemBtn').click(function() {
-                var itemId = $('#item_id').val();
-                var itemText = $('#item_id option:selected').text().trim();
-                var qty = $('#qty').val();
-                var price = $('#item_price')
-                    .val(); // This should be updated to use the price from data attribute
-                var uomId = $('#uom_id').val();
-                var subtotal = $('#subtotal').val();
-
-                console.table({
-                    itemId: itemId,
-                    itemText: itemText,
-                    qty: qty,
-                    price: price,
-                    uomId: uomId,
-                    subtotal: subtotal
-                });
-
-                // Append the new row to the product table
-                var newRow = `
-                    <tr>
-                        <td>${itemText}</td>
-                        <td>${qty}</td>
-                        <td>${price}</td>
-                        <td>${$('#uom_id option:selected').text()}</td>
-                        <td class="text-right">${subtotal}</td>
-                    </tr>
-                `;
-                $('#productTable tbody').append(newRow);
-                updateTotalAmount();
-
-                // Clear modal inputs
-                $('#item_id').val('').trigger('change');
-                $('#qty').val(1);
-                $('#item_price').val(1);
-                $('#subtotal').val(0);
-                $('#modal-lg').modal('hide');
+            // Update subtotal when quantity, price, or discount changes
+            $('#qty, #item_price, #diskon').on('input', function() {
+                updateSubtotal();
             });
 
+            // Update subtotal, total price, VAT, and total amount
+            function updateSubtotal() {
+                var qty = parseFloat($('#qty').val()) || 0;
+                var price = parseFloat($('#item_price').val()) || 0;
+                var discount = parseFloat($('#diskon').val()) || 0;
+                var subtotal = qty * price - discount;
+                $('#subtotal').val(subtotal.toFixed(2));
 
-            // Update total amount
-            function updateTotalAmount() {
-                var total = 0;
-                $('#productTable tbody tr').each(function() {
-                    var amount = parseFloat($(this).find('td:last').text());
-                    total += isNaN(amount) ? 0 : amount;
-                });
-                $('#totalAmount').text(total);
+                updateTotals();
             }
+
+            // Save item to list and update totals
+            $('#saveItemBtn').on('click', function() {
+                var itemId = $('#item_id').val();
+                var itemText = $('#item_id option:selected').text();
+                var qty = parseFloat($('#qty').val());
+                var price = parseFloat($('#item_price').val());
+                var discount = parseFloat($('#diskon').val());
+                var subtotal = parseFloat($('#subtotal').val());
+                var itemId = $('#item_id').val();
+                var itemText = $('#item_id option:selected').text();
+                var qty = parseFloat($('#qty').val());
+                var price = parseFloat($('#item_price').val());
+                var discount = parseFloat($('#diskon').val());
+                var subtotal = parseFloat($('#subtotal').val());
+                var item = {
+                    id: $('#item_id').val(),
+                    qty: parseFloat($('#qty').val()) || 0,
+                    price: parseFloat($('#item_price').val()) || 0,
+                    discount: parseFloat($('#diskon').val()) || 0,
+                    uom_id: $('#uom_id').val()
+                };
+                item.amount = (item.qty * item.price) - item.discount;
+
+                items.push(item);
+                var newRow = `<tr>
+                    <td>${itemText}</td>
+                    <td>${qty}</td>
+                    <td>${price.toFixed(2)}</td>
+                    <td>${$('#uom_id option:selected').text()}</td>
+                    <td>${discount.toFixed(2)}</td>
+                    <td>${subtotal.toFixed(2)}</td>
+                </tr>`;
+                $('#productTable tbody').append(newRow);
+                $('#itemList').val(JSON.stringify(items));
+                updateTotals();
+                $('#modal-lg').modal('hide');
+                $('#qty').val(1);
+                $('#item_price').val(1);
+                $('#diskon').val(0);
+                $('#subtotal').val(0);
+            });
+
+            // Calculate and display total price, VAT, and total amount
+            function updateTotals() {
+                var totalPrice = items.reduce((sum, item) => sum + item.amount, 0);
+                var vatAmount = totalPrice * 0.11; // 11% VAT
+                var totalAmount = totalPrice + vatAmount;
+
+                $('#totalPrice').text(totalPrice.toFixed(2));
+                $('#vatAmount').text(vatAmount.toFixed(2));
+                $('#totalPurchaseAmount').text(totalAmount.toFixed(2));
+            }
+
+
         });
     </script>
 @endsection

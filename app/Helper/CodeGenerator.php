@@ -4,6 +4,7 @@ namespace App\Helper;
 
 use App\Models\ItemModel;
 use App\Models\PartnerModel;
+use App\Models\PurchaseOrderModel;
 
 
 class CodeGenerator
@@ -21,6 +22,14 @@ class CodeGenerator
     {
         $count = ItemModel::count() + 1;
         $code = 'ITM' . sprintf('%05d', $count);
+        $code .= '-' . date('y');
+        return $code;
+    }
+
+    public static function generatePurchaseOrderCode()
+    {
+        $count = PurchaseOrderModel::count() + 1;
+        $code = 'PO' . sprintf('%05d', $count);
         $code .= '-' . date('y');
         return $code;
     }

@@ -455,8 +455,6 @@
         })
     </script>
 
-
-
     <script>
         @if (session('success'))
             Swal.fire({
@@ -469,10 +467,122 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: '{{ session('error') }}',
+                text: '{{ session('errors') }}',
             });
         @endif
     </script>
+
+    <script>
+        $(document).ready(function() {
+            const editRoute = "{{ route('po.edit', ':id') }}";
+            const deleteRoute = "{{ route('po.destroy', ':id') }}";
+            $('#po-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('po.index') }}",
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'po_number',
+                        name: 'po_number'
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            // Menentukan kelas badge berdasarkan status
+                            let badgeClass = '';
+                            let statusText = '';
+
+                            switch (data) {
+                                case 'draft':
+                                    badgeClass = 'badge bg-warning text-dark';
+                                    statusText = 'Draft';
+                                    break;
+                                case 'approved':
+                                    badgeClass =
+                                    'badge bg-success';
+                                    statusText = 'Approved';
+                                    break;
+                                case 'canceled':
+                                    badgeClass =
+                                    'badge bg-danger';
+                                    statusText = 'canceled';
+                                    break;
+                                default:
+                                    badgeClass = 'badge bg-secondary';
+                                    statusText = 'Unknown';
+                            }
+
+                            return `<span class="${badgeClass}">${statusText}</span>`;
+                        }
+                    },
+
+                    {
+                        data: 'po_date',
+                        name: 'po_date'
+                    },
+                    {
+                        data: 'payment_term',
+                        name: 'payment_term'
+                    },
+                    {
+                        data: 'total',
+                        name: 'total'
+                    },
+                    {
+                        data: 'partner.name',
+                        name: 'partner.name'
+                    },
+                    {
+                        data: 'partner.email',
+                        name: 'partner.email'
+                    },
+                    {
+                        data: 'encrypted_id',
+                        name: 'encrypted_id',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            var editUrl = editRoute.replace(':id', data);
+                            var deleteUrl = deleteRoute.replace(':id', data);
+                            return `
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton${data}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Action
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton${data}">
+                                <a class="dropdown-item" href="${editUrl}">Edit</a>
+                                <div class="dropdown-divider"></div>
+                                <form action="${deleteUrl}" method="post" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                    @csrf
+                                    @method('delete') <!-- Ganti 'destroy' dengan 'delete' -->
+                                    <button type="submit" class="dropdown-item bg-danger text-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>`;
+                        }
+
+                    }
+
+                ],
+                autoWidth: false,
+                responsive: true,
+                paging: true,
+                lengthChange: false,
+                searching: true,
+                ordering: true,
+                info: true
+            });
+        });
+    </script>
+
+
 </body>
 
 </html>

@@ -12,6 +12,7 @@ class PartnerModel extends Model
     protected $fillable = [
         'code',
         'name',
+        'npwp',
         'description',
         'address',
         'phone',
