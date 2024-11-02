@@ -1,12 +1,14 @@
 @extends('layouts.index')
 
 @section('title')
-    Create Purchase Order
+    Edit Purchase Order
 @endsection
 
 @section('content')
     <div class="col-md-12">
-        <form method="POST" action="{{ route('po.store') }}">
+        <form method="POST" action="{{ route('po.update', $po->id) }}">
+            @method('PUT')
+            @csrf
             <div class="row">
                 <div class="col-md-8">
                     {{-- Header --}}
@@ -16,7 +18,6 @@
                                         class="fas fa-arrow-left"></i></span> Back</a>
                         </div>
                         <div class="card-body">
-                            @csrf
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -26,7 +27,7 @@
                                             style="width: 100%;" name="partner_id">
                                             @foreach ($partners as $item)
                                                 <option value="{{ $item->id }}"
-                                                    {{ old('partner_id') == $item->id ? 'selected' : '' }}>
+                                                    {{ old('partner_id', $po->partner_id) == $item->id ? 'selected' : '' }}>
                                                     {{ $item->name }}
                                                 </option>
                                             @endforeach
@@ -41,7 +42,7 @@
                                         <label for="po_date" class="form-label">Purchase Order Date</label>
                                         <input type="date" class="form-control @error('po_date') is-invalid @enderror"
                                             id="po_date" aria-describedby="po_date" name="po_date"
-                                            value="{{ old('po_date', '') }}">
+                                            value="{{ old('po_date', $po->po_date) }}">
                                         @error('po_date')
                                             <span id="po_date" class="error invalid-feedback">{{ $message }}</span>
                                         @enderror
@@ -55,7 +56,7 @@
                                         <input type="date"
                                             class="form-control @error('delivery_date') is-invalid @enderror"
                                             id="delivery_date" aria-describedby="delivery_date" name="delivery_date"
-                                            value="{{ old('delivery_date', '') }}">
+                                            value="{{ old('delivery_date', $po->delivery_date) }}">
                                         @error('delivery_date')
                                             <span id="delivery_date" class="error invalid-feedback">{{ $message }}</span>
                                         @enderror
@@ -67,11 +68,11 @@
                                         <select id="payment_term"
                                             class="form-control select2bs4 @error('payment_term') is-invalid @enderror"
                                             style="width: 100%;" name="payment_term">
-                                            <option value="CBD" {{ old('payment_term') == 'CBD' ? 'selected' : '' }}>
+                                            <option value="CBD" {{ old('payment_term', $po->payment_term) == 'CBD' ? 'selected' : '' }}>
                                                 Cash Before Delivery</option>
-                                            <option value="CAD" {{ old('payment_term') == 'CAD' ? 'selected' : '' }}>
+                                            <option value="CAD" {{ old('payment_term', $po->payment_term) == 'CAD' ? 'selected' : '' }}>
                                                 Cash After Delivery</option>
-                                            <option value="COD" {{ old('payment_term') == 'COD' ? 'selected' : '' }}>
+                                            <option value="COD" {{ old('payment_term', $po->payment_term) == 'COD' ? 'selected' : '' }}>
                                                 Cash On Delivery</option>
                                         </select>
                                         @error('payment_term')
@@ -85,7 +86,7 @@
                                     <div class="form-group">
                                         <label for="description" class="form-label">Description</label>
                                         <textarea aria-describedby="description" class="form-control  @error('description') is-invalid @enderror"
-                                            id="description" rows="3" name="description">{{ old('description', '') }}</textarea>
+                                            id="description" rows="3" name="description">{{ old('description', $po->description) }}</textarea>
                                         @error('description')
                                             <span id="description" class="error invalid-feedback">{{ $message }}</span>
                                         @enderror
@@ -115,6 +116,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @foreach ($po->purchaseOrderDetails as $item)
+                                        <tr>
+                                            <td>{{ $item->item->code . ' - ' . $item->item->name }}</td>
+                                            <td>{{ $item->quantity }}</td>
+                                            <td>{{ $item->price }}</td>
+                                            <td>{{ $item->unitOfMeasure->name }}</td>
+                                            <td>{{ $item->discount }}</td>
+                                            <td>{{ $item->subtotal }}</td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                             <input type="hidden" id="itemList" name="items">
@@ -139,7 +150,7 @@
                                     <strong>Total Price</strong>
                                 </div>
                                 <div class="col-6 text-right">
-                                    <span id="totalPrice">0</span>
+                                    <span id="totalPrice">{{ old(0, $po->total) }}</span>
                                 </div>
                             </div>
                             <hr>
@@ -148,7 +159,7 @@
                                     <strong>PPN (11%)</strong>
                                 </div>
                                 <div class="col-6 text-right">
-                                    <span id="vatAmount">0</span>
+                                    <span id="vatAmount">{{ old(0, $po->purchaseOrderTaxes[0]->amount) }}</span>
                                 </div>
                             </div>
                             <hr>
@@ -157,7 +168,7 @@
                                     <strong>Discount</strong>
                                 </div>
                                 <div class="col-6 text-right">
-                                    <span id="discountAmount">0</span>
+                                    <span id="discountAmount">{{ old(0, 0) }}</span>
                                 </div>
                             </div>
                             <hr>
@@ -166,7 +177,7 @@
                                     <strong>Total Amount</strong>
                                 </div>
                                 <div class="col-6 text-right">
-                                    <span id="totalPurchaseAmount">0</span>
+                                    <span id="totalPurchaseAmount">{{ old(0, ($po->total + $po->purchaseOrderTaxes->first()->amount)) }}</span>
                                 </div>
                             </div>
                             <hr>
@@ -183,8 +194,6 @@
             </div>
         </form>
     </div>
-
-
 
     {{-- Start Dropdown Item --}}
     <div class="modal fade" id="modal-lg">
@@ -274,13 +283,20 @@
     <script>
         $(document).ready(function() {
             let items = [];
+            var podetail = @json($po->purchaseOrderDetails);
 
-            // Set item price based on selection
-            $('#item_id').on('change', function() {
-                var price = $('#item_id option:selected').data('price');
-                $('#item_price').val(price);
-                updateSubtotal();
+            podetail.forEach(function(item) {
+                items.push({
+                    id: item.id,
+                    qty: item.quantity,
+                    price: item.price,
+                    discount: item.discount,
+                    uom_id: item.unit_of_measure.id,
+                    amount: item.subtotal
+                });
             });
+
+
 
             // Update subtotal when quantity, price, or discount changes
             $('#qty, #item_price, #diskon').on('input', function() {

@@ -50,7 +50,19 @@ Route::resource('purchase-order', PurchaseOrderController::class)->names('po')->
 
 
 
-Route::resource('inventory/good-receipt', GoodReceiptController::class)->names('gr')->middleware('auth');
+Route::middleware('auth')->prefix('inventory')->group(function () {
+    Route::get('good-receipt', [GoodReceiptController::class, 'index'])->name('gr.index');
+    Route::get('good-receipt/create/{id}', [GoodReceiptController::class, 'create'])->name('gr.create');
+    Route::post('good-receipt/store', [GoodReceiptController::class, 'store'])->name('gr.store');
+    Route::get('good-receipt/show/{id}', [GoodReceiptController::class, 'show'])->name('gr.show');
+    Route::get('good-receipt/edit/{id}', [GoodReceiptController::class, 'edit'])->name('gr.edit');
+    Route::put('good-receipt/update/{id}', [GoodReceiptController::class, 'update'])->name('gr.update');
+    Route::delete('good-receipt/destroy/{id}', [GoodReceiptController::class, 'destroy'])->name('gr.destroy');
+});
+
+
+
+Route::resource('inventory/good-issue', GoodReceiptController::class)->names('gi')->middleware('auth');
 
 Route::get('/login', [AuthController::class, 'index'])->name('login')->middleware('guest');
 Route::post('/login/check', [AuthController::class, 'login'])->name('login.check');

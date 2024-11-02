@@ -146,7 +146,21 @@ class PurchaseOrderController extends Controller
     public function edit(string $id)
     {
         //
-        return dd(Crypt::decrypt($id), $id);
+        $id = Crypt::decrypt($id);
+        $data = [
+            'period' => PeriodClosingModel::where('is_closed', 0)->first(),
+            'partners' => PartnerModel::where('is_supplier', 1)->where('is_active', 1)->get(),
+            'items' => ItemModel::where('is_active', 1)->get(),
+            'uoms' => UnitOfMeasureModel::where('is_active', 1)->get(),
+            'po' => PurchaseOrderModel::with([
+                'partner',
+                'purchaseOrderDetails',
+                'purchaseOrderTaxes'
+            ])
+                ->select('id', 'po_number', 'po_date', 'delivery_date', 'payment_term', 'status', 'total', 'description', 'partner_id')
+                ->find($id)
+        ];
+        return view('purchase_order.edit', $data);
     }
 
     /**
@@ -163,14 +177,20 @@ class PurchaseOrderController extends Controller
     public function destroy(string $id)
     {
         //
-        return dd(Crypt::decrypt($id));
+        $po = PurchaseOrderModel::find(Crypt::decrypt($id));
+        if ($po->status == 'approved') {
+            return redirect()->route('po.index')->with('errors', 'Purchase Order already approved');
+        }
+        $po->status = 'canceled';
+        $po->updated_by = Auth::id();
+        $po->save();
+        return redirect()->route('po.index')->with('success', 'Purchase Order canceled successfully');
     }
 
     private function reCalculateItems($items)
     {
         foreach ($items as $item) {
             $item->amount = ($item->qty * $item->price) - $item->discount;
-            //add ppn item
             $item->ppn = $item->amount * 0.11;
         }
         return $items;

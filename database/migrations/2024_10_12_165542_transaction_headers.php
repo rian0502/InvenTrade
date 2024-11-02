@@ -18,7 +18,8 @@ return new class extends Migration
             $table->date('transaction_date');
             $table->string('description');
             $table->enum('transaction_type', ['IN', 'OUT', 'RETURN']);
-            $table->foreignId('partner_id')->constrained('partners')->onDelete('cascade')->onUpdate('cascade');
+            $table->integer('po_so_id')->default(0);
+            $table->foreignId('partner_id')->default(0)->constrained('partners')->onDelete('cascade')->onUpdate('cascade');
             $table->boolean('is_active')->default(true);
             $table->integer('created_by')->nullable();
             $table->integer('updated_by')->nullable();

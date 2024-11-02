@@ -48,7 +48,10 @@
     <link rel="stylesheet" href="/plugins/bs-stepper/css/bs-stepper.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.3/dist/sweetalert2.min.css"
         integrity="sha256-XE4NT4UAtULuSdFWQXaaLSOt0/ZqL5xbX/ObUyf2UTI=" crossorigin="anonymous">
-
+    <!-- jQuery -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <!-- jQuery UI 1.11.4 -->
+    <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -321,7 +324,24 @@
                             </a>
                         </li>
                         <li class="nav-header">Point of Sale</li>
-
+                        <li class="nav-item">
+                            <a href="#" class="nav-link {{ Request::is('master-data*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-shop"></i>
+                                <p>
+                                    Point of Sale
+                                    <i class="fas fa-angle-left right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ route('period.index') }}"
+                                        class="nav-link {{ Request::is('master-data/period*') ? 'active' : '' }}">
+                                        <i class="bi bi-cart-dash nav-icon"></i>
+                                        <p>New Sale</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                         <li class="nav-header">Stock Management</li>
                         <li class="nav-item">
                             <a href="{{ route('gr.index') }}"
@@ -329,6 +349,15 @@
                                 <i class="nav-icon fas fa-scroll"></i>
                                 <p>
                                     Goods Receipt
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('gi.index') }}"
+                                class="nav-link {{ Request::is('inventory/good-issue*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-receipt"></i>
+                                <p>
+                                    Goods Issue
                                 </p>
                             </a>
                         </li>
@@ -383,10 +412,7 @@
     </div>
     <!-- ./wrapper -->
 
-    <!-- jQuery -->
-    <script src="/plugins/jquery/jquery.min.js"></script>
-    <!-- jQuery UI 1.11.4 -->
-    <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
     <script>
         $.widget.bridge('uibutton', $.ui.button)
@@ -476,6 +502,8 @@
         $(document).ready(function() {
             const editRoute = "{{ route('po.edit', ':id') }}";
             const deleteRoute = "{{ route('po.destroy', ':id') }}";
+            const approveRoute = "{{ route('gr.create', ':id') }}"; // Tambahkan rute untuk penerimaan
+
             $('#po-table').DataTable({
                 processing: true,
                 serverSide: true,
@@ -494,7 +522,6 @@
                         name: 'status',
                         className: 'text-center',
                         render: function(data, type, row) {
-                            // Menentukan kelas badge berdasarkan status
                             let badgeClass = '';
                             let statusText = '';
 
@@ -504,14 +531,12 @@
                                     statusText = 'Draft';
                                     break;
                                 case 'approved':
-                                    badgeClass =
-                                    'badge bg-success';
+                                    badgeClass = 'badge bg-success';
                                     statusText = 'Approved';
                                     break;
                                 case 'canceled':
-                                    badgeClass =
-                                    'badge bg-danger';
-                                    statusText = 'canceled';
+                                    badgeClass = 'badge bg-danger';
+                                    statusText = 'Canceled';
                                     break;
                                 default:
                                     badgeClass = 'badge bg-secondary';
@@ -521,7 +546,6 @@
                             return `<span class="${badgeClass}">${statusText}</span>`;
                         }
                     },
-
                     {
                         data: 'po_date',
                         name: 'po_date'
@@ -551,25 +575,31 @@
                         render: function(data, type, row) {
                             var editUrl = editRoute.replace(':id', data);
                             var deleteUrl = deleteRoute.replace(':id', data);
+                            var approveUrl = approveRoute.replace(':id', data);
+
+                            // Kondisi untuk menampilkan link penerimaan jika statusnya 'approved'
+                            var approveButton = row.status === 'approved' ? `
+                            <div class="dropdown-divider"></div>
+                            <a href="${approveUrl}" class="dropdown-item">Good Receipt</a>` : '';
+
                             return `
-                        <div class="dropdown">
-                            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton${data}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Action
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton${data}">
-                                <a class="dropdown-item" href="${editUrl}">Edit</a>
-                                <div class="dropdown-divider"></div>
-                                <form action="${deleteUrl}" method="post" onsubmit="return confirm('Are you sure you want to delete this item?');">
-                                    @csrf
-                                    @method('delete') <!-- Ganti 'destroy' dengan 'delete' -->
-                                    <button type="submit" class="dropdown-item bg-danger text-danger">Delete</button>
-                                </form>
-                            </div>
-                        </div>`;
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton${data}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Action
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton${data}">
+                                    <a class="dropdown-item" href="${editUrl}">Edit</a>
+                                    ${approveButton}
+                                    <div class="dropdown-divider"></div>
+                                    <form action="${deleteUrl}" method="post" onsubmit="return confirm('Are you sure you want to delete this item?');" style="display:inline;">
+                                        @csrf
+                                        @method('delete')
+                                        <button type="submit" class="dropdown-item bg-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>`;
                         }
-
                     }
-
                 ],
                 autoWidth: false,
                 responsive: true,
@@ -581,6 +611,7 @@
             });
         });
     </script>
+
 
 
 </body>
