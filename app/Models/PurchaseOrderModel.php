@@ -37,5 +37,10 @@ class PurchaseOrderModel extends Model
         return $this->hasMany(POTaxModel::class, 'order_id', 'id');
     }
 
+    public function transaction()
+    {
+        return $this->hasOne(TransactionHeaderModel::class, 'po_so_id', 'id');
+    }
+
 
 }

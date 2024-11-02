@@ -52,9 +52,9 @@
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
                                             <a class="dropdown-item"
-                                                href="{{ route('partner.edit', $partner->encrypted_id) }}">Edit</a>
+                                                href="{{ route('partner.edit', $partner->id) }}">Edit</a>
                                             <div class="dropdown-divider"></div>
-                                            <form action="{{ route('partner.destroy', $partner->encrypted_id) }}" method="post">
+                                            <form action="{{ route('partner.destroy', $partner->id) }}" method="post">
                                                 @csrf
                                                 @method('delete')
                                                 <button type="submit" class="dropdown-item bg-danger">Delete</button>

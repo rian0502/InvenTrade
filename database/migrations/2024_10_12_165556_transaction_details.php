@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('transaction_id')->constrained('transaction_headers')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('item_id')->constrained('items')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('unit_of_measure_id')->constrained('unit_of_measures')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('conversion_id')->constrained('unit_conversions')->onDelete('cascade')->onUpdate('cascade');
             $table->integer('created_by')->nullable();
             $table->integer('updated_by')->nullable();
             $table->timestamps();
@@ -32,7 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
         Schema::dropIfExists('transaction_details');
     }
 };

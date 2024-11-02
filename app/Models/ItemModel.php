@@ -27,4 +27,8 @@ class ItemModel extends Model
     {
         return $this->belongsTo(UnitOfMeasureModel::class, 'uom_id');
     }
+    public function inventory()
+    {
+        return $this->hasOne(InventoryItemModel::class, 'item_id', 'id');
+    }
 }
