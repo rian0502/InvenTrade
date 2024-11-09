@@ -14,7 +14,7 @@
             </div>
             <div class="card-body">
                 <table id="po-table" class="table table-striped">
-                    <thead class="text-primary">
+                    <thead>
                         <th class="text-center">No</th>
                         <th>Number</th>
                         <th class="text-center">Status</th>

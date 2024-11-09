@@ -12,7 +12,7 @@
                 </div>
                 <div class="card-body">
                     <table id="example1" class="table table-striped">
-                        <thead class="text-primary">
+                        <thead>
                             <th class="text-center">No</th>
                             <th>Name</th>
                             <th>Username</th>

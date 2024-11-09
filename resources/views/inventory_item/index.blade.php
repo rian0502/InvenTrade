@@ -9,7 +9,7 @@
         <div class="card">
             <div class="card-body">
                 <table id="inventory-table" class="table table-striped">
-                    <thead class=" text-primary">
+                    <thead>
                         <th class="text-center">No</th>
                         <th>Item</th>
                         <th>Stock</th>
