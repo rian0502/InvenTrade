@@ -7,8 +7,9 @@
     <title>InvenTrade | Log in </title>
 
     <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
     <!-- icheck bootstrap -->
@@ -20,45 +21,55 @@
 
 <body class="hold-transition login-page">
     <div class="login-box">
-        <!-- /.login-logo -->
         <div class="card card-outline card-dark">
             <div class="card-header text-center">
-                <a href="/index2.html" class="h1"><b>Inven</b>Trade</a>
+                <a href="/" class="h1"><b>Inven</b>Trade</a>
             </div>
             <div class="card-body">
-                <p class="login-box-msg">Sign in to start your session</p>
 
                 <form action="{{ route('login.check') }}" method="post">
                     @csrf
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Username" name="username">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="far fa-id-badge"></span>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" name="username"
+                            placeholder="Enter Username">
+                        @error('username')
+                            <span id="username" class="error invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" class="form-control" id="password" name="password"
+                            placeholder="Password">
+                        @error('password')
+                            <span id="password" class="error invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="row d-flex justify-content-between mb-2">
+                        <div class="col-6">
+                            <div class="icheck-dark">
+                                <input type="checkbox" id="remember" name="remember">
+                                <label for="remember">
+                                    Remember Me
+                                </label>
                             </div>
                         </div>
-                    </div>
-                    <div class="input-group mb-3">
-                        <input type="password" class="form-control" placeholder="Password" name="password">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
+                        <div class="col-6">
+                            <p class="text-right"><a href=""><strong>Forgot Password?</strong></a></p>
                         </div>
                     </div>
-                    <div class="social-auth-links text-center mt-2 mb-3">
-                        <button type="submit" class="btn btn-block btn-dark"><i class="fas fa-sign-in-alt"></i> Sign
-                            in</button>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" style="width: 100%;" class="btn btn-dark">Sign In</button>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <p class="mb-0">Don't have an account? <a href="">Register</a></p>
+                        </div>
                     </div>
                 </form>
-
-
-                <p class="mb-1">
-                    <a href="forgot-password.html">I forgot my password</a>
-                </p>
-                <p class="mb-0">
-                    <a href="register.html" class="text-center">Register a new membership</a>
-                </p>
             </div>
             <!-- /.card-body -->
         </div>
