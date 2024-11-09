@@ -336,7 +336,7 @@
                                 <li class="nav-item">
                                     <a href="{{ route('period.index') }}"
                                         class="nav-link {{ Request::is('master-data/period*') ? 'active' : '' }}">
-                                        <i class="bi bi-cart-dash nav-icon"></i>
+                                        <i class="fas fa-cash-register nav-icon"></i>
                                         <p>New Sale</p>
                                     </a>
                                 </li>
@@ -358,6 +358,15 @@
                                 <i class="nav-icon fas fa-receipt"></i>
                                 <p>
                                     Goods Issue
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('inventory.index') }}"
+                                class="nav-link {{ Request::is('inventory/items*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-journal-whills"></i>
+                                <p>
+                                    Inventory
                                 </p>
                             </a>
                         </li>
@@ -611,7 +620,50 @@
             });
         });
     </script>
-
+    <script>
+        $(document).ready(function() {
+            $('#inventory-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('inventory.index') }}",
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'item',
+                        name: 'item'
+                    },
+                    {
+                        data: 'stock',
+                        name: 'stock',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'price',
+                        name: 'price',
+                        className: 'text-right',
+                        render: function(data, type, row) {
+                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(data);
+                        }
+                    },
+                    {
+                        data: 'uom',
+                        name: 'uom',
+                        className: 'text-center'
+                    },
+                ],
+                autoWidth: false,
+                responsive: true,
+                paging: true,
+                lengthChange: false,
+                searching: true,
+                ordering: true,
+                info: true
+            });
+        });
+    </script>
 
 
 </body>

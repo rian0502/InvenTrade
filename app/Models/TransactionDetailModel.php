@@ -16,6 +16,7 @@ class TransactionDetailModel extends Model
         'price',
         'discount',
         'total',
+        'conversion_id',
         'transaction_id',
         'item_id',
         'unit_of_measure_id',

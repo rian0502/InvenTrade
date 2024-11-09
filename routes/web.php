@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoodReceiptController;
+use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PartnersController;
 use App\Http\Controllers\PeriodeClosing;
@@ -60,9 +61,10 @@ Route::middleware('auth')->prefix('inventory')->group(function () {
     Route::delete('good-receipt/destroy/{id}', [GoodReceiptController::class, 'destroy'])->name('gr.destroy');
 });
 
-
-
 Route::resource('inventory/good-issue', GoodReceiptController::class)->names('gi')->middleware('auth');
+
+
+Route::get('inventory/items', [InventoryItemController::class, 'index'])->name('inventory.index');
 
 Route::get('/login', [AuthController::class, 'index'])->name('login')->middleware('guest');
 Route::post('/login/check', [AuthController::class, 'login'])->name('login.check');

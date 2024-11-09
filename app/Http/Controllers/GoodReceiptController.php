@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ItemModel;
 use App\Models\PartnerModel;
-use Illuminate\Http\Request;
 use App\Helper\CodeGenerator;
 use App\Models\PeriodClosingModel;
+use App\Models\InventoryItemModel;
 use App\Models\PurchaseOrderModel;
 use App\Models\UnitOfMeasureModel;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +15,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\TransactionHeaderModel;
-use App\Http\Requests\GoodReceiptStore;
 use App\Models\TransactionDetailModel;
-use Illuminate\Support\Facades\Validator;
-
+use App\Http\Requests\GoodReceiptStore;
 
 class GoodReceiptController extends Controller
 {
@@ -44,7 +42,7 @@ class GoodReceiptController extends Controller
             ->select('id', 'po_number', 'po_date', 'delivery_date', 'payment_term', 'status', 'total', 'description', 'partner_id')
             ->find($id);
         if ($po->transaction != null) {
-            return redirect()->route('gr.index')->with('error', 'Good Receipt already created for this Purchase Order');
+            return redirect()->route('gr.index')->with('errors', 'Good Receipt already created for this Purchase Order');
         }
         $data = [
             'period' => PeriodClosingModel::where('is_closed', 0)->first(),
@@ -104,17 +102,39 @@ class GoodReceiptController extends Controller
                 $uom = $request->uom[$key];
                 $ppn = $pod->price * 0.11;
                 $price = $pod->price + $ppn;
+                $conversion_id = 0;
+                if ($uom != $pod->item->uom_id) {
+                    $conversion = UnitConversionModel::where('from_unit_id', $uom)
+                        ->orWhere('to_unit_id', $uom)
+                        ->first();
+                    $conversion_id = $conversion->id;
+                }
                 TransactionDetailModel::create([
                     'quantity' => $receivedQty,
                     'price' => $price,
                     'discount' => $pod->discount,
                     'total' => $receivedQty * $price,
                     'transaction_id' => $goodReceipt->id,
+                    'conversion_id' => $conversion_id,
                     'item_id' => $pod->item_id,
                     'unit_of_measure_id' => $uom,
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id()
                 ]);
+
+                if ($uom != $pod->item->uom_id) {
+                    $conversion = UnitConversionModel::where('from_unit_id', $uom)
+                        ->orWhere('to_unit_id', $uom)
+                        ->first();
+                    if ($conversion->from_unit_id == $uom) {
+                        $receivedQty = $receivedQty * $conversion->conversion_value;
+                        $price = $price / $conversion->conversion_value;
+                    } else {
+                        $receivedQty = $receivedQty / $conversion->conversion_value;
+                        $price = $price * $conversion->conversion_value;
+                    }
+                }
+                $this->movingAverage($pod->item_id, $receivedQty, $price);
             }
             Db::commit();
         } catch (\Exception $e) {
@@ -124,4 +144,30 @@ class GoodReceiptController extends Controller
 
         return response()->json(['message' => 'Store Good Receipt']);
     }
+
+
+    private function movingAverage($item_id, $quantity, $price)
+    {
+        $inventory = InventoryItemModel::where('item_id', $item_id)->first();
+    
+        if ($inventory) {
+            $totalQty = $inventory->stock + $quantity;
+            $totalValue = ($inventory->stock * $inventory->price) + ($quantity * $price);
+            $averagePrice = $totalValue / $totalQty;
+            $inventory->update([
+                'stock' => $totalQty,
+                'price' => $averagePrice,
+                'updated_by' => Auth::id()
+            ]);
+        } else {
+            InventoryItemModel::create([
+                'item_id' => $item_id,
+                'stock' => $quantity,
+                'price' => $price,
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id()
+            ]);
+        }
+    }
+    
 }
