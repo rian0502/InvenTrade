@@ -25,10 +25,26 @@ class GoodReceiptController extends Controller
     public function index()
     {
         $data = [
-            'period' => PeriodClosingModel::where('is_closed', 0)->first()
+            'period' => PeriodClosingModel::where('is_closed', 0)->first(),
+            'transactions' => TransactionHeaderModel::with(['partner'])
+                ->where('transaction_type', 'IN')
+                ->orderBy('transaction_date', 'desc')
+                ->get()
         ];
         return view('good_receipt.index', $data);
     }
+
+    public function show($id)
+    {
+        $transaction = TransactionHeaderModel::with(['partner', 'transactionDetail.item', 'transactionDetail.unitOfMeasure'])
+            ->find($id);
+        $data = [
+            'period' => PeriodClosingModel::where('is_closed', 0)->first(),
+            'transaction' => $transaction
+        ];
+        return view('good_receipt.show', $data);
+    }
+
 
     public function create($id)
     {

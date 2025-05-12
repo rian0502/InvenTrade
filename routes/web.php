@@ -8,14 +8,14 @@ use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PartnersController;
 use App\Http\Controllers\PeriodeClosing;
+use App\Http\Controllers\PosNewSaleController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UnitConversionController;
 use App\Http\Controllers\UoMController;
 use App\Http\Controllers\UsersController;
-use App\Http\Controllers\WarehouseController;
-use App\Models\PurchaseOrderModel;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WarehouseController;
 
 
 /*
@@ -65,6 +65,12 @@ Route::resource('inventory/good-issue', GoodReceiptController::class)->names('gi
 
 
 Route::get('inventory/items', [InventoryItemController::class, 'index'])->name('inventory.index');
+
+//POS
+Route::middleware('auth')->prefix('pos')->group(function () {
+    Route::resource('new-sale', PosNewSaleController::class)->names('new-sale');
+});
+
 
 Route::get('/login', [AuthController::class, 'index'])->name('login')->middleware('guest');
 Route::post('/login/check', [AuthController::class, 'login'])->name('login.check');

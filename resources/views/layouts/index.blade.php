@@ -204,8 +204,14 @@
                         <img src="/img/schedule.png" class="img-circle elevation-2" alt="User Image">
                     </div>
                     <div class="info">
-                        <a href="/" class="d-block">{{ $period->start_date }}/{{ $period->end_date }}</a>
+                        <span class="text-sm text-light">
+                            <p class="d-block">
+                                {{ \Carbon\Carbon::parse($period->start_date)->format('d M Y') }} /
+                                {{ \Carbon\Carbon::parse($period->end_date)->format('d M Y') }}
+                            </p>
+                        </span>
                     </div>
+
                 </div>
 
                 <!-- Sidebar Menu -->
@@ -331,8 +337,8 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('period.index') }}"
-                                        class="nav-link {{ Request::is('master-data/period*') ? 'active' : '' }}">
+                                    <a href="{{ route('new-sale.index') }}"
+                                        class="nav-link {{ Request::is('pos/new-sale*') ? 'active' : '' }}">
                                         <i class="fas fa-cash-register nav-icon"></i>
                                         <p>New Sale</p>
                                     </a>
