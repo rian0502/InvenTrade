@@ -29,13 +29,15 @@ class PurchaseOrderController extends Controller
         if ($request->ajax()) {
             $data = PurchaseOrderModel::with([
                 'partner:id,code,name,npwp,address,phone,email,contact_person,is_supplier,is_active',
-                'purchaseOrderTaxes:id,amount,tax_id,order_id'
+                'purchaseOrderTaxes:id,amount,tax_id,order_id',
+                'transaction:id,code,po_so_id'
             ])
                 ->select('id', 'po_number', 'po_date', 'delivery_date', 'payment_term', 'status', 'total', 'description', 'partner_id')
                 ->get()
                 ->makeHidden(['created_at', 'updated_at', 'created_by', 'updated_by'])
                 ->map(function ($item) {
                     $item->encrypted_id = Crypt::encrypt($item->id);
+                    $item->has_transaction = $item->transaction ? true : false;
                     return $item;
                 });
 
@@ -137,7 +139,21 @@ class PurchaseOrderController extends Controller
     public function show(string $id)
     {
         //
-        return dd(Crypt::decrypt($id), $id);
+        $id = Crypt::decrypt($id);
+        $data = [
+            'period' => PeriodClosingModel::where('is_closed', 0)->first(),
+            'partners' => PartnerModel::where('is_supplier', 1)->where('is_active', 1)->get(),
+            'items' => ItemModel::where('is_active', 1)->get(),
+            'uoms' => UnitOfMeasureModel::where('is_active', 1)->get(),
+            'po' => PurchaseOrderModel::with([
+                'partner',
+                'purchaseOrderDetails',
+                'purchaseOrderTaxes'
+            ])
+                ->select('id', 'po_number', 'po_date', 'delivery_date', 'payment_term', 'status', 'total', 'description', 'partner_id')
+                ->find($id)
+        ];
+        return view('purchase_order.show', $data);
     }
 
     /**
@@ -147,6 +163,10 @@ class PurchaseOrderController extends Controller
     {
         //
         $id = Crypt::decrypt($id);
+        $po = PurchaseOrderModel::with('transaction')->find($id);
+        if ($po->transaction) {
+            return redirect()->route('po.index')->with('errors', 'Purchase Order already has transaction');
+        }
         $data = [
             'period' => PeriodClosingModel::where('is_closed', 0)->first(),
             'partners' => PartnerModel::where('is_supplier', 1)->where('is_active', 1)->get(),

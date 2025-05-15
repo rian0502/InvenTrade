@@ -96,36 +96,6 @@
                     </div>
                     {{-- End Header --}}
 
-                    {{-- Detail --}}
-                    {{-- Product --}}
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Product</h3>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered" id="productTable">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Quantity</th>
-                                        <th>Price</th>
-                                        <th>Measure</th>
-                                        <th>Diskon</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                            <input type="hidden" id="itemList" name="items">
-                        </div>
-                        <div class="card-footer text-right">
-                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-lg">
-                                <i class="fas fa-plus-circle"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {{-- End Product --}}
                 </div>
                 <div class="col-md">
                     {{-- Preiview --}}
@@ -179,6 +149,41 @@
                         </div>
                     </div>
                     {{-- End Preview --}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    {{-- Detail --}}
+                    {{-- Product --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Product</h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered" id="productTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Measure</th>
+                                        <th>Diskon</th>
+                                        <th>Amount</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <input type="hidden" id="itemList" name="items">
+                        </div>
+                        <div class="card-footer text-right">
+                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modal-lg">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {{-- End Product --}}
                 </div>
             </div>
         </form>
@@ -268,9 +273,6 @@
     </div>
     {{-- End Dropdown Item --}}
 
-
-
-    <script src="/plugins/jquery/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
             let items = [];
@@ -329,6 +331,10 @@
                     <td>${$('#uom_id option:selected').text()}</td>
                     <td>${discount.toFixed(2)}</td>
                     <td>${subtotal.toFixed(2)}</td>
+                    <td>
+                        <button id=btn-edit-${itemId} type="button" class="btn btn-warning btn-sm edit-item"><i class="fas fa-edit"></i></button>
+                        <button id=btn-delete-${itemId} type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button>
+                    </td>
                 </tr>`;
                 $('#productTable tbody').append(newRow);
                 $('#itemList').val(JSON.stringify(items));
@@ -338,6 +344,26 @@
                 $('#item_price').val(1);
                 $('#diskon').val(0);
                 $('#subtotal').val(0);
+            });
+            $('#productTable tbody').on('click', '.remove-item', function(e) {
+                e.preventDefault();
+                var buttonId = $(this).attr('id');
+                var itemId = buttonId.replace('btn-delete-', '');
+                items = items.filter(function(item) {
+                    return item.id != itemId;
+                });
+                $(this).closest('tr').remove(); 
+                updateTotals();
+            });
+            $('#productTable tbody').on('click', '.edit-item', function(e) {
+                e.preventDefault();
+                var buttonId = $(this).attr('id');
+                var itemId = buttonId.replace('btn-edit-', '');
+                items = items.filter(function(item) {
+                    return item.id != itemId;
+                });
+                $(this).closest('tr').remove(); 
+                updateTotals();
             });
 
             // Calculate and display total price, VAT, and total amount

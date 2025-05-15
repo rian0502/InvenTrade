@@ -29,7 +29,8 @@ class TransactionHeaderModel extends Model
         return $this->belongsTo(PartnerModel::class, 'partner_id', 'id');
     }
     public function po(){
-        return $this->belongsTo(PurchaseOrderModel::class, 'po_so_id', 'id');
+        return $this->belongsTo(PurchaseOrderModel::class, 'po_so_id', 'id')->where('transaction_type', 'IN');
     }
+
     
 }
