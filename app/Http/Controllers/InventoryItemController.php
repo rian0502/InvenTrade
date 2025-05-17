@@ -16,11 +16,11 @@ class InventoryItemController extends Controller
     {
         if ($request->ajax()) {
             $data = InventoryItemModel::with('item')
-            ->select('id', 'item_id', 'stock', 'price') // Only select necessary fields
+            ->select('id', 'item_id', 'stock', 'price')
             ->get()
-            ->makeHidden(['created_at', 'updated_at', 'created_by', 'updated_by']) // Hide specified attributes
+            ->makeHidden(['created_at', 'updated_at', 'created_by', 'updated_by'])
             ->map(function ($item) {
-                $item->encrypted_id = Crypt::encrypt($item->id); // Add encrypted_id
+                $item->encrypted_id = Crypt::encrypt($item->id);
                 return $item;
             });
             return DataTables::of($data)
